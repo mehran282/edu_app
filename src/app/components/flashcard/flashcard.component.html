@@ -5,7 +5,7 @@
   </div>
 
   <div class="flashcard" [class.flipped]="isFlipped" *ngIf="currentCard">
-    <div class="card-front" (click)="flipCard()">
+    <div class="card-front" >
       <div class="card-content">
         <p class="statement">{{ currentCard.statement }}</p>
       </div>
@@ -14,7 +14,7 @@
         <button class="btn btn-incorrect" (click)="checkAnswer(false); $event.stopPropagation()">نادرست</button>
       </div>
     </div>
-    <div class="card-back" (click)="flipCard()">
+    <div class="card-back" >
       <div class="difficulty-badge" *ngIf="currentCard && showFeedback" 
            [ngClass]="{
              'difficulty-easy': currentCard.difficulty === 'آسان',
