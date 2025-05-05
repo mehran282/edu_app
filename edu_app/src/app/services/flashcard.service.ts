@@ -1,0 +1,102 @@
+import { Injectable } from '@angular/core';
+import { BehaviorSubject, Observable } from 'rxjs';
+
+export interface Flashcard {
+  id: number;
+  statement: string;
+  explanation: string;
+  correct: boolean;
+  difficulty: 'آسان' | 'متوسط' | 'سخت';
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class FlashcardService {
+  private flashcards: Flashcard[] = [
+    {
+      id: 1,
+      statement: 'در بیشتر سلول‌های زنده، انرژی مورد نیاز از مولکول ATP تأمین می‌شود.',
+      explanation: 'این گزاره صحیح است. ATP یا آدنوزین تری‌فسفات منبع اصلی انرژی در سلول‌های زنده است که انرژی شیمیایی را برای واکنش‌های درون سلولی فراهم می‌کند.',
+      correct: true,
+      difficulty: 'آسان'
+    },
+    {
+      id: 2,
+      statement: 'میتوکندری فقط در سلول‌های جانوری یافت می‌شود.',
+      explanation: 'این گزاره نادرست است. میتوکندری هم در سلول‌های جانوری و هم در سلول‌های گیاهی یافت می‌شود و نقش مهمی در تنفس سلولی و تولید ATP دارد.',
+      correct: false,
+      difficulty: 'متوسط'
+    },
+    {
+      id: 3,
+      statement: 'زنجیره انتقال الکترون در غشای درونی میتوکندری قرار دارد.',
+      explanation: 'این گزاره صحیح است. زنجیره انتقال الکترون که در فرآیند تنفس سلولی نقش دارد، در غشای درونی میتوکندری واقع شده است.',
+      correct: true,
+      difficulty: 'متوسط'
+    },
+    {
+      id: 4,
+      statement: 'دیواره سلولی در سلول‌های گیاهی از جنس کیتین است.',
+      explanation: 'این گزاره نادرست است. دیواره سلولی در گیاهان عمدتاً از جنس سلولز است، نه کیتین. کیتین در اسکلت خارجی حشرات و دیواره سلولی قارچ‌ها یافت می‌شود.',
+      correct: false,
+      difficulty: 'سخت'
+    },
+    {
+      id: 5,
+      statement: 'در تخمیر لاکتیکی، پیرووات به لاکتات تبدیل می‌شود.',
+      explanation: 'این گزاره صحیح است. در فرآیند تخمیر لاکتیکی که در شرایط بی‌هوازی رخ می‌دهد، پیرووات به لاکتات تبدیل می‌شود و NAD+ بازسازی می‌شود.',
+      correct: true,
+      difficulty: 'آسان'
+    }
+  ];
+
+  private currentCardIndex = new BehaviorSubject<number>(0);
+  private score = new BehaviorSubject<number>(0);
+
+  constructor() { }
+
+  getFlashcards(): Flashcard[] {
+    return this.flashcards;
+  }
+
+  getCurrentCardIndex(): Observable<number> {
+    return this.currentCardIndex.asObservable();
+  }
+
+  getCurrentCard(): Flashcard {
+    return this.flashcards[this.currentCardIndex.value];
+  }
+
+  nextCard(): void {
+    const nextIndex = (this.currentCardIndex.value + 1) % this.flashcards.length;
+    this.currentCardIndex.next(nextIndex);
+  }
+
+  checkAnswer(isCorrect: boolean): boolean {
+    const currentCard = this.getCurrentCard();
+    const isAnswerCorrect = (currentCard.correct === isCorrect);
+    
+    if (isAnswerCorrect) {
+      if (currentCard.difficulty === 'سخت') {
+        this.addScore(2);
+      } else {
+        this.addScore(1);
+      }
+    }
+    
+    return isAnswerCorrect;
+  }
+
+  getScore(): Observable<number> {
+    return this.score.asObservable();
+  }
+
+  private addScore(points: number): void {
+    this.score.next(this.score.value + points);
+  }
+
+  resetScore(): void {
+    this.score.next(0);
+  }
+}

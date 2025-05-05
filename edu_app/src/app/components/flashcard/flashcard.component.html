@@ -1,0 +1,44 @@
+<div class="flashcard-container" dir="rtl">
+  <div class="score-container">
+    <span class="score-label">امتیاز: </span>
+    <span class="score-value" [class.animate]="animateScore">{{ persianScore }}</span>
+  </div>
+
+  <div class="flashcard" [class.flipped]="isFlipped" *ngIf="currentCard">
+    <div class="card-front" (click)="flipCard()">
+      <div class="card-content">
+        <p class="statement">{{ currentCard.statement }}</p>
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-correct" (click)="checkAnswer(true); $event.stopPropagation()">درست</button>
+        <button class="btn btn-incorrect" (click)="checkAnswer(false); $event.stopPropagation()">نادرست</button>
+      </div>
+    </div>
+    <div class="card-back" (click)="flipCard()">
+      <div class="difficulty-badge" *ngIf="currentCard && showFeedback" 
+           [ngClass]="{
+             'difficulty-easy': currentCard.difficulty === 'آسان',
+             'difficulty-medium': currentCard.difficulty === 'متوسط',
+             'difficulty-hard': currentCard.difficulty === 'سخت'
+           }">
+        {{ currentCard.difficulty }}
+      </div>
+      <div class="feedback-placeholder">
+        <div class="feedback" *ngIf="showFeedback">
+          <p [class.feedback-correct]="feedbackMessage === 'آفرین! پاسخ شما صحیح بود.'" 
+             [class.feedback-incorrect]="feedbackMessage === 'متأسفانه پاسخ شما اشتباه بود.'">
+            {{ feedbackMessage }}
+          </p>
+        </div>
+      </div>
+      <div class="card-content">
+        <p class="explanation">{{ currentCard.explanation }}</p>
+      </div>
+      <div class="card-actions">
+        <button class="btn next" (click)="nextCard(); $event.stopPropagation()">بعدی</button>
+      </div>
+    </div>
+  </div>
+
+  <app-confetti [trigger]="showConfetti"></app-confetti>
+</div>
