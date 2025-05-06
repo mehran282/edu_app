@@ -1,20 +1,7 @@
+/* استفاده از Google Fonts برای Vazirmatn */
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap');
+
 /* You can add global styles to this file, and also import other style files */
-@font-face {
-  font-family: 'Vazirmatn';
-  src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-Regular.woff2') format('woff2');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Vazirmatn';
-  src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-Bold.woff2') format('woff2');
-  font-weight: bold;
-  font-style: normal;
-  font-display: swap;
-}
-
 * {
   box-sizing: border-box;
   margin: 0;
@@ -23,7 +10,8 @@
 
 html, body {
   height: 100%;
-  font-family: 'Vazirmatn', Arial, sans-serif;
+  margin: 0;
+  font-family: 'Vazirmatn', sans-serif;
   direction: rtl;
   /* Prevent automatic text size adjustment */
   -webkit-text-size-adjust: 100%; /* Chrome, Safari, older Edge */
@@ -32,10 +20,16 @@ html, body {
 }
 
 body {
-  margin: 0;
-  padding: 0;
+  display: flex;
+  flex-direction: column;
   background-color: #f5f5f5;
   overflow: hidden; /* Prevent body scrolling */
+}
+
+app-root {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 :root {

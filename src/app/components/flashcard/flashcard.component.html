@@ -1,44 +1,55 @@
-<div class="flashcard-container" dir="rtl">
-  <div class="score-container">
-    <span class="score-label">امتیاز: </span>
-    <span class="score-value" [class.animate]="animateScore">{{ persianScore }}</span>
-  </div>
+<main class="flashcard-container" dir="rtl">
+  <header>
+    <h1 class="seo-heading">ادوکادو - آموزش زیست‌شناسی با فلش‌کارت‌ها</h1>
+    <div class="score-container">
+      <span class="score-label">امتیاز: </span>
+      <span class="score-value" [class.animate]="animateScore">{{ persianScore }}</span>
+    </div>
+  </header>
 
-  <div class="flashcard" [class.flipped]="isFlipped" *ngIf="currentCard">
-    <div class="card-front" >
-      <div class="card-content">
-        <p class="statement">{{ currentCard.statement }}</p>
+  <section class="flashcard" [class.flipped]="isFlipped" *ngIf="currentCard">
+    <div class="card-front">
+      <div class="card-content" [class.changing]="isCardChanging">
+        <h2 class="statement">{{ currentCard.statement }}</h2>
       </div>
       <div class="card-actions">
-        <button class="btn btn-correct" (click)="checkAnswer(true); $event.stopPropagation()">درست</button>
-        <button class="btn btn-incorrect" (click)="checkAnswer(false); $event.stopPropagation()">نادرست</button>
+        <button class="btn btn-correct" (click)="checkAnswer(true); $event.stopPropagation()" aria-label="انتخاب گزینه درست">درست</button>
+        <button class="btn btn-incorrect" (click)="checkAnswer(false); $event.stopPropagation()" aria-label="انتخاب گزینه نادرست">نادرست</button>
       </div>
     </div>
-    <div class="card-back" >
-      <div class="difficulty-badge" *ngIf="currentCard && showFeedback" 
-           [ngClass]="{
-             'difficulty-easy': currentCard.difficulty === 'آسان',
-             'difficulty-medium': currentCard.difficulty === 'متوسط',
-             'difficulty-hard': currentCard.difficulty === 'سخت'
-           }">
-        {{ currentCard.difficulty }}
-      </div>
-      <div class="feedback-placeholder">
-        <div class="feedback" *ngIf="showFeedback">
-          <p [class.feedback-correct]="feedbackMessage === 'آفرین! پاسخ شما صحیح بود.'" 
-             [class.feedback-incorrect]="feedbackMessage === 'متأسفانه پاسخ شما اشتباه بود.'">
-            {{ feedbackMessage }}
-          </p>
+    <div class="card-back">
+      <div class="result-container">
+        <div class="difficulty-badge" 
+             [ngClass]="{
+               'difficulty-easy': currentCard.difficulty === 'آسان',
+               'difficulty-medium': currentCard.difficulty === 'متوسط',
+               'difficulty-hard': currentCard.difficulty === 'سخت'
+             }">
+          {{ currentCard.difficulty }}
+        </div>
+        <div class="feedback" [class.visible]="showFeedback">
+          <div class="feedback-icon" [ngClass]="{'correct-icon': feedbackMessage === 'آفرین! پاسخ شما صحیح بود.', 'incorrect-icon': feedbackMessage === 'متأسفانه پاسخ شما اشتباه بود.'}">
+            <svg *ngIf="feedbackMessage === 'آفرین! پاسخ شما صحیح بود.'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64">
+              <path fill="#4caf50" d="M9,16.17L4.83,12l-1.42,1.41L9,19 21,7l-1.41-1.41L9,16.17z"/>
+            </svg>
+            <svg *ngIf="feedbackMessage === 'متأسفانه پاسخ شما اشتباه بود.'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64">
+              <path fill="#f44336" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41z"/>
+            </svg>
+          </div>
         </div>
       </div>
-      <div class="card-content">
+      <div class="card-content" [class.visible]="showFeedback">
         <p class="explanation">{{ currentCard.explanation }}</p>
       </div>
       <div class="card-actions">
-        <button class="btn next" (click)="nextCard(); $event.stopPropagation()">بعدی</button>
+        <button class="btn next" (click)="goToNextCard(); $event.stopPropagation()" aria-label="رفتن به کارت بعدی">بعدی</button>
       </div>
     </div>
-  </div>
+  </section>
 
   <app-confetti [trigger]="showConfetti"></app-confetti>
-</div>
+  
+  <footer class="seo-footer">
+    <p class="seo-description">ادوکادو یک اپلیکیشن آموزشی هوشمند برای یادگیری زیست‌شناسی با کمک فلش‌کارت‌های تعاملی است. با استفاده از این اپلیکیشن، یادگیری را آسان، سریع و لذت‌بخش کنید!</p>
+  </footer>
+</main>
