@@ -18,5 +18,5 @@ export const routes: Routes = [
     component: FlashcardComponent,
     title: 'ادوکادو - آموزش زیست‌شناسی با فلش‌کارت‌های تعاملی'
   },
-  { path: '**', redirectTo: 'education/flashcards' }
+  { path: '**', redirectTo: 'education/flashcards'  }
 ];
