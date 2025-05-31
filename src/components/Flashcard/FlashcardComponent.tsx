@@ -282,7 +282,7 @@ const FlashcardComponent: React.FC = () => {
       
       {/* نمایش نسخه اپ */}
       <div className="app-version">
-        نسخه ۱.۴
+        نسخه ۱.۵
       </div>
       
       <footer className="seo-footer">
