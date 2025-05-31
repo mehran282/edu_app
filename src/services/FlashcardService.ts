@@ -35,6 +35,14 @@ export interface Flashcard {
   topicTitle: string;
 }
 
+// Interface برای داده‌های خام کارت از API
+export interface ApiCardData {
+  flipcardId: string;
+  text: string;
+  description: string;
+  topicTitle: string;
+}
+
 // سرویس API
 class FlashcardApiService {
   static async getRandomFlashcard(): Promise<Flashcard> {
@@ -149,6 +157,23 @@ export const useFlashcardService = () => {
     }
   };
 
+  // ست کردن کارت prefetch شده (برای استفاده خارجی)
+  const setPrefetchedCard = (cardData: ApiCardData): void => {
+    try {
+      // تبدیل داده‌های API به فرمت داخلی
+      const prefetchedCard: Flashcard = {
+        id: cardData.flipcardId,
+        statement: arabicToPersian(cardData.text),
+        explanation: cardData.description ? arabicToPersian(cardData.description) : null,
+        flipcardId: cardData.flipcardId,
+        topicTitle: arabicToPersian(cardData.topicTitle)
+      };
+      setNextCard(prefetchedCard);
+    } catch (error) {
+      console.warn('خطا در ست کردن کارت prefetch شده:', error);
+    }
+  };
+
   // بارگذاری اولیه کارت - فقط یک بار
   useEffect(() => {
     if (!hasInitialized.current) {
@@ -256,6 +281,7 @@ export const useFlashcardService = () => {
     resetHistory,
     getCardHistory,
     getCurrentCardUrl,
+    setPrefetchedCard, // اضافه کردن method جدید
     isLoading,
     error,
     cardHistory

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFlashcardService } from '../../services/FlashcardService';
+import { API_ENDPOINTS } from '../../config/environment';
 import ConfettiComponent from '../Confetti/ConfettiComponent';
 import QuillRenderer from '../QuillRenderer/QuillRenderer';
 import './FlashcardStyles.css';
@@ -12,6 +13,7 @@ const FlashcardComponent: React.FC = () => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [apiMessage, setApiMessage] = useState('');
   const [showFeedback, setShowFeedback] = useState(false);
   const [animateScore, setAnimateScore] = useState(false);
   const [isCardChanging, setIsCardChanging] = useState(false);
@@ -57,21 +59,76 @@ const FlashcardComponent: React.FC = () => {
     flipCard();
     
     try {
-      // API call برای validation
-      const isCorrectAnswer = await flashcardService.validateUserAnswer(userAnswer);
+      // API call برای validation - دریافت کامل ValidationResponse
+      const currentCard = flashcardService.getCurrentCard();
+      if (!currentCard) {
+        throw new Error('کارت فعلی موجود نیست');
+      }
+
+      // فراخوانی مستقیم API برای دریافت message
+      const response = await fetch(API_ENDPOINTS.VALIDATE_RESPONSE, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          flipcardId: currentCard.flipcardId,
+          isTrue: userAnswer
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const validationResult = await response.json();
+      
+      // بلافاصله بعد از دریافت پاسخ validation، کارت بعدی را prefetch کنیم
+      // این کار را به صورت موازی انجام می‌دهیم تا سرعت را بالا ببریم
+      const nextCardPromise = fetch(API_ENDPOINTS.GET_ANONYMOUS, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
       
       // بلافاصله بعد از دریافت پاسخ API
-      if (isCorrectAnswer) {
-        setFeedbackMessage('آفرین! پاسخ شما صحیح بود.');
-        setShowConfetti(true);
-        flashcardService.markAsCorrect();
+      if (validationResult.isSuccess) {
+        const isCorrectAnswer = validationResult.data;
+        setApiMessage(validationResult.message); // ذخیره message از API
         
-        setTimeout(() => {
-          setShowConfetti(false);
-        }, 3000);
+        if (isCorrectAnswer) {
+          setFeedbackMessage('آفرین! پاسخ شما صحیح بود.');
+          setShowConfetti(true);
+          flashcardService.markAsCorrect();
+          
+          setTimeout(() => {
+            setShowConfetti(false);
+          }, 3000);
+        } else {
+          setFeedbackMessage('متأسفانه پاسخ شما اشتباه بود.');
+          flashcardService.markAsIncorrect();
+        }
       } else {
-        setFeedbackMessage('متأسفانه پاسخ شما اشتباه بود.');
-        flashcardService.markAsIncorrect();
+        setFeedbackMessage('خطا در بررسی پاسخ. لطفاً مجدداً تلاش کنید.');
+        setApiMessage(''); // reset کردن message در صورت خطا
+      }
+      
+      // کارت بعدی را آماده کنیم
+      try {
+        const nextCardResponse = await nextCardPromise;
+        if (nextCardResponse.ok) {
+          const nextCardResult = await nextCardResponse.json();
+          if (nextCardResult.isSuccess) {
+            // کارت بعدی را در FlashcardService ذخیره می‌کنیم
+            flashcardService.setPrefetchedCard(nextCardResult.data);
+          }
+        }
+      } catch (error) {
+        console.warn('خطا در prefetch کارت بعدی:', error);
+        // خطا در prefetch نباید روی UX تاثیر بگذارد
       }
       
       setIsValidating(false);
@@ -81,6 +138,7 @@ const FlashcardComponent: React.FC = () => {
       console.error('خطا در validation:', error);
       
       setFeedbackMessage('خطا در بررسی پاسخ. لطفاً مجدداً تلاش کنید.');
+      setApiMessage(''); // reset کردن message در صورت خطا
       setIsValidating(false);
       setShowFeedback(true);
     }
@@ -91,6 +149,7 @@ const FlashcardComponent: React.FC = () => {
     setShowFeedback(false);
     setIsCardChanging(true);
     setIsFlipped(false);
+    setApiMessage(''); // reset کردن پیام API
     
     setTimeout(async () => {
       await flashcardService.nextCard();
@@ -199,7 +258,7 @@ const FlashcardComponent: React.FC = () => {
                     <QuillRenderer content={currentCard.explanation} className="explanation" />
                   ) : (
                     <p className="simple-feedback">
-                      {feedbackMessage === 'آفرین! پاسخ شما صحیح بود.' ? 'گزاره صحیح' : 'گزاره غلط'}
+                      {apiMessage}
                     </p>
                   )}
                 </div>
