@@ -60,30 +60,29 @@ const FlashcardComponent: React.FC = () => {
       // API call برای validation
       const isCorrectAnswer = await flashcardService.validateUserAnswer(userAnswer);
       
-      setTimeout(() => {
-        if (isCorrectAnswer) {
-          setFeedbackMessage('آفرین! پاسخ شما صحیح بود.');
-          setShowConfetti(true);
-          flashcardService.markAsCorrect();
-          
-          setTimeout(() => {
-            setShowConfetti(false);
-          }, 3000);
-        } else {
-          setFeedbackMessage('متأسفانه پاسخ شما اشتباه بود.');
-          flashcardService.markAsIncorrect();
-        }
-        setShowFeedback(true);
-        setIsValidating(false);
-      }, 650); // کمی بیشتر از مدت زمان انیمیشن چرخش (0.6s)
+      // بلافاصله بعد از دریافت پاسخ API
+      if (isCorrectAnswer) {
+        setFeedbackMessage('آفرین! پاسخ شما صحیح بود.');
+        setShowConfetti(true);
+        flashcardService.markAsCorrect();
+        
+        setTimeout(() => {
+          setShowConfetti(false);
+        }, 3000);
+      } else {
+        setFeedbackMessage('متأسفانه پاسخ شما اشتباه بود.');
+        flashcardService.markAsIncorrect();
+      }
+      
+      setIsValidating(false);
+      setShowFeedback(true);
+      
     } catch (error) {
       console.error('خطا در validation:', error);
       
-      setTimeout(() => {
-        setFeedbackMessage('خطا در بررسی پاسخ. لطفاً مجدداً تلاش کنید.');
-        setShowFeedback(true);
-        setIsValidating(false);
-      }, 650);
+      setFeedbackMessage('خطا در بررسی پاسخ. لطفاً مجدداً تلاش کنید.');
+      setIsValidating(false);
+      setShowFeedback(true);
     }
   };
 
@@ -167,42 +166,55 @@ const FlashcardComponent: React.FC = () => {
             </div>
           </div>
           <div className="card-back">
-            <div className="result-container">
-              <div className={`feedback ${showFeedback ? 'visible' : ''}`}>
-                <div className={`feedback-icon ${
-                  feedbackMessage === 'آفرین! پاسخ شما صحیح بود.' ? 'correct-icon' : 'incorrect-icon'
-                }`}>
-                  {feedbackMessage === 'آفرین! پاسخ شما صحیح بود.' ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64">
-                      <path fill="#4caf50" d="M9,16.17L4.83,12l-1.42,1.41L9,19 21,7l-1.41-1.41L9,16.17z"/>
-                    </svg>
+            {/* نمایش loading هنگام پردازش API */}
+            {isValidating && (
+              <div className="validation-loading">
+                <div className="validation-spinner"></div>
+                <p>در حال پردازش...</p>
+              </div>
+            )}
+            
+            {/* نمایش نتیجه بعد از دریافت پاسخ API */}
+            {!isValidating && (
+              <>
+                <div className="result-container">
+                  <div className={`feedback ${showFeedback ? 'visible' : ''}`}>
+                    <div className={`feedback-icon ${
+                      feedbackMessage === 'آفرین! پاسخ شما صحیح بود.' ? 'correct-icon' : 'incorrect-icon'
+                    }`}>
+                      {feedbackMessage === 'آفرین! پاسخ شما صحیح بود.' ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64">
+                          <path fill="#4caf50" d="M9,16.17L4.83,12l-1.42,1.41L9,19 21,7l-1.41-1.41L9,16.17z"/>
+                        </svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64">
+                          <path fill="#f44336" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41z"/>
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className={`card-content ${showFeedback ? 'visible' : ''}`}>
+                  {currentCard.explanation ? (
+                    <QuillRenderer content={currentCard.explanation} className="explanation" />
                   ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64">
-                      <path fill="#f44336" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41z"/>
-                    </svg>
+                    <p className="simple-feedback">
+                      {feedbackMessage === 'آفرین! پاسخ شما صحیح بود.' ? 'گزاره صحیح' : 'گزاره غلط'}
+                    </p>
                   )}
                 </div>
-              </div>
-            </div>
-            <div className={`card-content ${showFeedback ? 'visible' : ''}`}>
-              {currentCard.explanation ? (
-                <QuillRenderer content={currentCard.explanation} className="explanation" />
-              ) : (
-                <p className="simple-feedback">
-                  {feedbackMessage === 'آفرین! پاسخ شما صحیح بود.' ? 'گزاره صحیح' : 'گزاره غلط'}
-                </p>
-              )}
-            </div>
-            <div className="card-actions">
-              <button 
-                className="btn next" 
-                onClick={(e) => { e.stopPropagation(); goToNextCard(); }}
-                aria-label="رفتن به کارت بعدی"
-                disabled={isCardChanging}
-              >
-                بعدی
-              </button>
-            </div>
+                <div className="card-actions">
+                  <button 
+                    className="btn next" 
+                    onClick={(e) => { e.stopPropagation(); goToNextCard(); }}
+                    aria-label="رفتن به کارت بعدی"
+                    disabled={isCardChanging}
+                  >
+                    بعدی
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </section>
       )}
