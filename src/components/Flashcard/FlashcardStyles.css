@@ -161,7 +161,7 @@
 }
 
 .card-back {
-  background-color: #e8eaf6;
+  background-color: #ffffff;
   transform: rotateY(180deg);
   justify-content: flex-start;
   position: relative;
